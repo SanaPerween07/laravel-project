@@ -12,31 +12,33 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\Request;
 
 
 Auth::routes();
 
-Route::get('/',[FrontendController::class,'index'])->name('home');
+Route::get('/', [FrontendController::class, 'index'])->name('home');
 
 Route::middleware(['auth'])->group(function () {
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     //user
-    Route::resource('user',UserController::class)->middleware('permission:users.view| users.create | users.edit | users.delete');
+    Route::resource('user', UserController::class)->middleware('permission:users.view| users.create | users.edit | users.delete');
     //update user password
 
     //profile page
-    Route::get('profile',[ProfileController::class,'index'])->name('profile');
+    Route::get('profile', [ProfileController::class, 'index'])->name('profile');
     //user profile update
-    Route::patch('profile-update/{user}',[ProfileController::class,'profileUpdate'])->name('user.profile.update');
-    Route::patch('user/pasword-update/{user}',[UserController::class,'password_update'])->name('user.password.update');
-    Route::put('user/profile-pic/{user}',[UserController::class,'updateProfileImage'])->name('user.profile.image.update');
+    Route::patch('profile-update/{user}', [ProfileController::class, 'profileUpdate'])->name('user.profile.update');
+    Route::patch('user/pasword-update/{user}', [UserController::class, 'password_update'])->name('user.password.update');
+    Route::put('user/profile-pic/{user}', [UserController::class, 'updateProfileImage'])->name('user.profile.image.update');
 
     //delete profile image
-    Route::patch('delete-profile-image/{user}',[UserController::class,'deleteProfileImage'])->name('delete.profile.image');
+    Route::patch('delete-profile-image/{user}', [UserController::class, 'deleteProfileImage'])->name('delete.profile.image');
     //trash view for users
     Route::get('user-trash', [UserController::class, 'trashView'])->name('user.trash');
     Route::get('user-restore/{id}', [UserController::class, 'restore'])->name('user.restore');
@@ -59,26 +61,26 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 
 
     //summernote image
-    Route::post('summernote',[SummerNoteController::class,'summerUpload'])->name('summer.upload.image');
-    Route::post('summernote/delete',[SummerNoteController::class,'summerDelete'])->name('summer.delete.image');
+    Route::post('summernote', [SummerNoteController::class, 'summerUpload'])->name('summer.upload.image');
+    Route::post('summernote/delete', [SummerNoteController::class, 'summerDelete'])->name('summer.delete.image');
 
 
     //employee
     // Route::resource('user',UserController::class);
-    Route::get('employee-booking',[UserController::class,'EmployeeBookings'])->name('employee.bookings');
-    Route::get('my-booking/{id}',[UserController::class,'show'])->name('employee.booking.detail');
+    Route::get('employee-booking', [UserController::class, 'EmployeeBookings'])->name('employee.bookings');
+    Route::get('my-booking/{id}', [UserController::class, 'show'])->name('employee.booking.detail');
 
     // employee profile self data update
-    Route::patch('employe-profile-update/{employee}',[ProfileController::class,'employeeProfileUpdate'])->name('employee.profile.update');
+    Route::patch('employe-profile-update/{employee}', [ProfileController::class, 'employeeProfileUpdate'])->name('employee.profile.update');
 
     //employee bio
-    Route::put('employee-bio/{employee}',[EmployeeController::class,'updateBio'])->name('employee.bio.update');
+    Route::put('employee-bio/{employee}', [EmployeeController::class, 'updateBio'])->name('employee.bio.update');
 
 
 
 
 
-    Route::get('test',function(Request $request){
+    Route::get('test', function (Request $request) {
         return view('test',  [
             'request' => $request
         ]);
@@ -89,7 +91,6 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
     Route::post('test', function (Request $request) {
         dd($request->all())->toArray();
     })->name('test');
-
 });
 
 
@@ -114,4 +115,22 @@ Route::post('/appointments/update-status', [AppointmentController::class, 'updat
 //update status from dashbaord
 Route::post('/update-status', [DashboardController::class, 'updateStatus'])->name('dashboard.update.status');
 
+// Route::get('/test-email', function (Request $request) {
+//     $clientEmail = $request->query('email'); // Get email from URL query
 
+//     if (!$clientEmail) {
+//         return 'Please provide an email address using ?email=client@gmail.com';
+//     }
+
+//     // Only allow @gmail.com addresses
+//     if (!preg_match('/^[^@]+@gmail\.com$/', $clientEmail)) {
+//         return 'Only @gmail.com email addresses are allowed.';
+//     }
+
+//     Mail::raw('This is a test email from Laravel!', function ($message) use ($clientEmail) {
+//         $message->to($clientEmail)
+//             ->subject('Test Email from Laravel');
+//     });
+
+//     return 'Test email sent to ' . $clientEmail;
+// });

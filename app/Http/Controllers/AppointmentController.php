@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
-use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Events\BookingCreated;
 use App\Events\StatusUpdated;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Traits\HasRoles;
 
 
 class AppointmentController extends Controller
@@ -47,23 +49,23 @@ class AppointmentController extends Controller
             'status' => 'required|string',
         ]);
 
-            // Set user_id if not provided but user is authenticated
+        // Set user_id if not provided but user is authenticated
         // if (auth()->check() && !$request->has('user_id')) {
         //     $validated['user_id'] = auth()->id();
         // }
 
-        $isPrivilegedRole = auth()->check() && (
-            auth()->user()->hasRole('admin') ||
-            auth()->user()->hasRole('moderator') ||
-            auth()->user()->hasRole('employee')
+        $isPrivilegedRole = Auth::check() && (
+            Auth::user()->role === 'admin' ||
+            Auth::user()->role === 'moderator' ||
+            Auth::user()->role === 'employee'
         );
 
-            // If admin/moderator/employee is booking, user_id should be null
+        // If admin/moderator/employee is booking, user_id should be null
         if ($isPrivilegedRole) {
             $validated['user_id'] = null;
-        } elseif (auth()->check() && !$request->has('user_id')) {
+        } elseif (Auth::check() && !$request->has('user_id')) {
             // Otherwise, assign user_id to the authenticated user
-            $validated['user_id'] = auth()->id();
+            $validated['user_id'] = Auth::id();
         }
 
 
@@ -74,6 +76,17 @@ class AppointmentController extends Controller
         $appointment = Appointment::create($validated);
 
         event(new BookingCreated($appointment));
+
+        // Get the client's email from the request or booking
+        $clientEmail = $request->input('email'); // or $appointment->email if stored
+
+        // Only send to @gmail.com addresses
+        if (preg_match('/^[^@]+@gmail\.com$/', $clientEmail)) {
+            Mail::raw('Your booking was successful!', function ($message) use ($clientEmail) {
+                $message->to($clientEmail)
+                    ->subject('Booking Confirmation');
+            });
+        }
 
         return response()->json([
             'success' => true,
@@ -130,5 +143,4 @@ class AppointmentController extends Controller
 
         return redirect()->back()->with('success', 'Appointment status updated successfully.');
     }
-
 }
